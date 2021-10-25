@@ -16,29 +16,29 @@ Author: Carolina Bieri, bieri2@illinois.edu
 Add to variable declarations:
 
 ```fortran
-  REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWSMOIS        ! CB
-  REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWTSLB         ! CB
-  REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWSH2O         ! CB
-  REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWSMOISEQ      ! CB
-  REAL,    ALLOCATABLE, DIMENSION(:)        ::  NEWDZS          ! CB
-  REAL,    ALLOCATABLE, DIMENSION(:)        ::  ADDL_SOIL_DZ    ! CB
-  REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWZSNSOXY      ! CB
-  integer                                   :: addl_soil_layers = 8  ! CB
+REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWSMOIS        ! CB
+REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWTSLB         ! CB
+REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWSH2O         ! CB
+REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWSMOISEQ      ! CB
+REAL,    ALLOCATABLE, DIMENSION(:)        ::  NEWDZS          ! CB
+REAL,    ALLOCATABLE, DIMENSION(:)        ::  ADDL_SOIL_DZ    ! CB
+REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWZSNSOXY      ! CB
+integer                                   :: addl_soil_layers = 8  ! CB
 ```
 
 Add to array allocations:
 ```fortran
-  ALLOCATE ( NEWSMOIS   (XSTART:XEND,1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) ) ! CB
-  ALLOCATE ( NEWSH2O    (XSTART:XEND,1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) ) ! CB
-  ALLOCATE ( NEWSMOISEQ (XSTART:XEND,1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) ) ! CB
-  ALLOCATE ( NEWTSLB    (XSTART:XEND,1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) ) ! CB
-  ALLOCATE ( NEWDZS     (1:NSOIL+ADDL_SOIL_LAYERS) )  ! CB
-  ALLOCATE ( NEWZSNSOXY (XSTART:XEND,-NSNOW+1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) )  ! CB
-  ALLOCATE ( ADDL_SOIL_DZ(1:ADDL_SOIL_LAYERS) )       ! CB
+ALLOCATE ( NEWSMOIS   (XSTART:XEND,1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) ) ! CB
+ALLOCATE ( NEWSH2O    (XSTART:XEND,1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) ) ! CB
+ALLOCATE ( NEWSMOISEQ (XSTART:XEND,1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) ) ! CB
+ALLOCATE ( NEWTSLB    (XSTART:XEND,1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) ) ! CB
+ALLOCATE ( NEWDZS     (1:NSOIL+ADDL_SOIL_LAYERS) )  ! CB
+ALLOCATE ( NEWZSNSOXY (XSTART:XEND,-NSNOW+1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) )  ! CB
+ALLOCATE ( ADDL_SOIL_DZ(1:ADDL_SOIL_LAYERS) )       ! CB
 ```
 
 2.	Comment out array initializations to missing values (in order to run with MMF)
-3.	Make changes to NoahMP_INIT arguments:
+3.	Make changes to NOAHMP_INIT arguments in module_sf_noahmpdrv.F:
 
 ```fortran
 SUBROUTINE NOAHMP_INIT ( MMINLU, SNOW , SNOWH , CANWAT , ISLTYP ,   IVGTYP, XLAT, &
@@ -71,4 +71,19 @@ SUBROUTINE NOAHMP_INIT ( MMINLU, SNOW , SNOWH , CANWAT , ISLTYP ,   IVGTYP, XLAT
        NEWTSLB, ADDL_SOIL_DZ, NEWDZS, NEWZSNSOXY)  ! CB
 
 ```
+4. Add new variables to declaration section of NOAHMP_INIT
+
+```fortran
+INTEGER, INTENT(IN) :: ADDL_SOIL_LAYERS ! CB
+
+REAL, DIMENSION(1:ADDL_SOIL_LAYERS), INTENT(IN), OPTIONAL :: ADDL_SOIL_DZ ! CB
+REAL, DIMENSION(ims:ime,1:nsoil+addl_soil_layers,jms:jme), INTENT(INOUT), OPTIONAL :: NEWTSLB ! CB
+REAL, DIMENSION(1:nsoil+addl_soil_layers), INTENT(INOUT), OPTIONAL :: NEWDZS ! CB
+REAL, DIMENSION(ims:ime,-2:nsoil+addl_soil_layers,jms:jme), INTENT(INOUT), OPTIONAL :: NEWZSNSOXY  ! CB
+
+INTEGER                :: NEWNSOIL ! CB
+REAL                      :: DEPTH  ! CB
+REAL, DIMENSION(1:NSOIL+ADDL_SOIL_LAYERS) :: NEWZSOIL ! CB
+```
+
 
