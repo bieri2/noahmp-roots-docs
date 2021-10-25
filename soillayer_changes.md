@@ -341,3 +341,24 @@ REAL, DIMENSION(1:NSOIL+ADDL_SOIL_LAYERS) :: SMCEQ,ZSOIL ! CB
  END DO
 
 ```
+
+11.	Add code to module_NoahMP_hrldas_driver.F after call to GROUNDWATER_INIT:
+
+```fortran
+call move_alloc(newsmois, smois)     ! CB
+call move_alloc(newsh2o, sh2o)       ! CB
+call move_alloc(newsmoiseq, smoiseq) ! CB
+
+NSOIL = num_soil_layers
+```
+
+12.	Change/add lines in TRANSFER_MP_PARAMETERS:
+```fortran
+INTEGER, INTENT(IN)    :: SOILTYPE(NSOIL)
+INTEGER, INTENT(IN)    ::  NSOIL     ! number of soil layers
+```
+
+Also add NSOIL to arguments in TRANSFER_MP_PARAMETERS. 
+
+13.	Change NSOIL in module_noahmplsm.F to new value.
+
