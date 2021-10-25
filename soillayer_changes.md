@@ -1,7 +1,7 @@
 ## Process for adding additional soil layers to Noah-MP 
 Author: Carolina Bieri, bieri2@illinois.edu
 
-1.	Add extra variables to module_NoahMP_hrldas_driver.F. 
+### 1.	Add extra variables to module_NoahMP_hrldas_driver.F. 
     - New soil variables with additional layers:
       - NEWSMOIS
       - NEWSH2O 
@@ -37,8 +37,8 @@ ALLOCATE ( NEWZSNSOXY (XSTART:XEND,-NSNOW+1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) 
 ALLOCATE ( ADDL_SOIL_DZ(1:ADDL_SOIL_LAYERS) )       ! CB
 ```
 
-2.	Comment out array initializations to missing values (in order to run with MMF)
-3.	Make changes to NOAHMP_INIT arguments in module_sf_noahmpdrv.F:
+### 2.	Comment out array initializations to missing values (in order to run with MMF)
+### 3.	Make changes to NOAHMP_INIT arguments in module_sf_noahmpdrv.F:
 
 ```fortran
 SUBROUTINE NOAHMP_INIT ( MMINLU, SNOW , SNOWH , CANWAT , ISLTYP ,   IVGTYP, XLAT, &
@@ -71,7 +71,7 @@ SUBROUTINE NOAHMP_INIT ( MMINLU, SNOW , SNOWH , CANWAT , ISLTYP ,   IVGTYP, XLAT
        NEWTSLB, ADDL_SOIL_DZ, NEWDZS, NEWZSNSOXY)  ! CB
 
 ```
-4. Add new variables to declaration section of NOAHMP_INIT:
+### 4. Add new variables to declaration section of NOAHMP_INIT:
 
 ```fortran
 INTEGER, INTENT(IN) :: ADDL_SOIL_LAYERS ! CB
