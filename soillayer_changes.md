@@ -1,7 +1,7 @@
 ## Process for adding additional soil layers to Noah-MP 
 Author: Carolina Bieri, bieri2@illinois.edu
 
-### 1.	Add extra variables to module_NoahMP_hrldas_driver.F. 
+1.	Add extra variables to module_NoahMP_hrldas_driver.F. 
     - New soil variables with additional layers:
       - NEWSMOIS
       - NEWSH2O 
@@ -37,8 +37,8 @@ ALLOCATE ( NEWZSNSOXY (XSTART:XEND,-NSNOW+1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) 
 ALLOCATE ( ADDL_SOIL_DZ(1:ADDL_SOIL_LAYERS) )       ! CB
 ```
 
-### 2.	Comment out array initializations to missing values (in order to run with MMF).
-### 3.	Make changes to NOAHMP_INIT arguments in module_sf_noahmpdrv.F:
+2.	Comment out array initializations to missing values (in order to run with MMF).
+3.	Make changes to NOAHMP_INIT arguments in module_sf_noahmpdrv.F:
 
 ```fortran
 SUBROUTINE NOAHMP_INIT ( MMINLU, SNOW , SNOWH , CANWAT , ISLTYP ,   IVGTYP, XLAT, &
@@ -71,7 +71,7 @@ SUBROUTINE NOAHMP_INIT ( MMINLU, SNOW , SNOWH , CANWAT , ISLTYP ,   IVGTYP, XLAT
        NEWTSLB, ADDL_SOIL_DZ, NEWDZS, NEWZSNSOXY)  ! CB
 
 ```
-### 4. Add new variables to declaration section of NOAHMP_INIT:
+4. Add new variables to declaration section of NOAHMP_INIT:
 
 ```fortran
 INTEGER, INTENT(IN) :: ADDL_SOIL_LAYERS ! CB
@@ -85,7 +85,7 @@ INTEGER                :: NEWNSOIL ! CB
 REAL                      :: DEPTH  ! CB
 REAL, DIMENSION(1:NSOIL+ADDL_SOIL_LAYERS) :: NEWZSOIL ! CB
 ```
-### 5. Add code near end of NOAHMP_INIT:
+5. Add soil temp interpolation code near end of NOAHMP_INIT:
 
 ```fortran
 
@@ -126,7 +126,8 @@ REAL, DIMENSION(1:NSOIL+ADDL_SOIL_LAYERS) :: NEWZSOIL ! CB
        ENDIF
 
 ```
-### 6. Make changes accordingly to calls to NOAHMP_INIT in module_NoahMP_hrldas_driver.F.
+
+7. Make changes accordingly to calls to NOAHMP_INIT in module_NoahMP_hrldas_driver.F.
 
 First call to NOAHMP_INIT (only executed if restart file used):
 ```fortran
@@ -185,4 +186,16 @@ CALL NOAHMP_INIT(    LLANDUSE,     SNOW,    SNOWH,   CANWAT,   ISLTYP,   IVGTYP,
                      rechclim ,gecros_state, &
                      NEWTSLB, ADDL_SOIL_DZ, NEWDZS, NEWZSNSOXY      )     ! CB
 
+```
+7. Define addl_soil_dz before second call to NOAHMP_INIT in module_NoahMP_hrldas_driver.F
+
+```fortran
+addl_soil_dz = (/1.0,1.0,2.0,2.0,2.0,2.0,3.0,5.0/) ! CB
+```
+
+8.	Redefine variables after second call to NOAHMP_INIT in module_NoahMP_hrldas_driver.F:
+
+```fortran
+     call move_alloc(newzsnsoxy, zsnsoxy) ! CB
+     call move_alloc(newdzs, dzs)   ! CB
 ```
