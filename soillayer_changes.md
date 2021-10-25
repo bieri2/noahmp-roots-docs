@@ -349,13 +349,13 @@ call move_alloc(newsmois, smois)     ! CB
 call move_alloc(newsh2o, sh2o)       ! CB
 call move_alloc(newsmoiseq, smoiseq) ! CB
 
-NSOIL = num_soil_layers
+NSOIL = num_soil_layers ! CB
 ```
 
 12.	Change/add lines in TRANSFER_MP_PARAMETERS:
 ```fortran
-INTEGER, INTENT(IN)    :: SOILTYPE(NSOIL)
-INTEGER, INTENT(IN)    ::  NSOIL     ! number of soil layers
+INTEGER, INTENT(IN)    :: SOILTYPE(NSOIL) ! CB
+INTEGER, INTENT(IN)    ::  NSOIL          ! CB
 ```
 
 Also add NSOIL to arguments in TRANSFER_MP_PARAMETERS. 
