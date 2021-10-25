@@ -71,7 +71,7 @@ SUBROUTINE NOAHMP_INIT ( MMINLU, SNOW , SNOWH , CANWAT , ISLTYP ,   IVGTYP, XLAT
        NEWTSLB, ADDL_SOIL_DZ, NEWDZS, NEWZSNSOXY)  ! CB
 
 ```
-4. Add new variables to declaration section of NOAHMP_INIT
+4. Add new variables to declaration section of NOAHMP_INIT:
 
 ```fortran
 INTEGER, INTENT(IN) :: ADDL_SOIL_LAYERS ! CB
@@ -85,5 +85,63 @@ INTEGER                :: NEWNSOIL ! CB
 REAL                      :: DEPTH  ! CB
 REAL, DIMENSION(1:NSOIL+ADDL_SOIL_LAYERS) :: NEWZSOIL ! CB
 ```
+5. Make changes accordingly to calls to NOAHMP_INIT in module_NoahMP_hrldas_driver.F.
 
+First call to NOAHMP_INIT (only executed if restart file used):
+```fortran
+CALL NOAHMP_INIT(    LLANDUSE,     SNOW,    SNOWH,   CANWAT,   ISLTYP,   IVGTYP, XLAT, &   ! call from WRF phys_init
+                ADDL_SOIL_LAYERS, & ! CB
+                    TSLB,    SMOIS,     SH2O,      DZS, FNDSOILW, FNDSNOWH, &
+                     TSK,  ISNOWXY,     TVXY,     TGXY, CANICEXY,      TMN,     XICE, &
+                CANLIQXY,    EAHXY,    TAHXY,     CMXY,     CHXY,                     &
+                  FWETXY, SNEQVOXY, ALBOLDXY,  QSNOWXY, QRAINXY,  WSLAKEXY,    ZWTXY,     WAXY, &
+                    WTXY,   TSNOXY,  ZSNSOXY,  SNICEXY,  SNLIQXY, LFMASSXY, RTMASSXY, &
+                STMASSXY,   WOODXY, STBLCPXY, FASTCPXY,   XSAIXY, LAI,                    &
+                 GRAINXY,    GDDXY,                                                   &
+                CROPTYPE,  CROPCAT,                                                   &
+                irnumsi  ,irnummi  ,irnumfi  ,irwatsi,    &
+                irwatmi  ,irwatfi  ,ireloss  ,irsivol,    &
+                irmivol  ,irfivol  ,irrsplh  ,            &
+                  T2MVXY,   T2MBXY, CHSTARXY,                                         &
+                   NSOIL,  .true.,                                                   &
+                  .true.,runoff_option, crop_option, irrigation_option, irrigation_method,   &
+                  sf_urban_physics,                         &  ! urban scheme
+                  ids,ide+1, jds,jde+1, kds,kde,                &  ! domain
+                  ims,ime, jms,jme, kms,kme,                &  ! memory
+                  its,ite, jts,jte, kts,kte                 &  ! tile
+                     ,smoiseq  ,smcwtdxy ,rechxy   ,deeprechxy, areaxy ,dx, dy, msftx, msfty,&
+                     wtddt    ,stepwtd  ,dtbl  ,qrfsxy ,qspringsxy  ,qslatxy,                  &
+                     fdepthxy ,terrain       ,riverbedxy ,eqzwt ,rivercondxy ,pexpxy,              &
+                     rechclim ,gecros_state                 &
+                     )
+```
+Second call to NOAHMP_INIT (always executed, regardless if restart run or not):
 
+```fortran
+CALL NOAHMP_INIT(    LLANDUSE,     SNOW,    SNOWH,   CANWAT,   ISLTYP,   IVGTYP, XLAT, &   ! call from WRF phys_init
+                    ADDL_SOIL_LAYERS, & ! CB
+                    TSLB,    SMOIS,     SH2O,      DZS, FNDSOILW, FNDSNOWH, &
+                     TSK,  ISNOWXY,     TVXY,     TGXY, CANICEXY,      TMN,     XICE, &
+                CANLIQXY,    EAHXY,    TAHXY,     CMXY,     CHXY,                     &
+                  FWETXY, SNEQVOXY, ALBOLDXY,  QSNOWXY, QRAINXY,  WSLAKEXY,    ZWTXY,     WAXY, &
+                    WTXY,   TSNOXY,  ZSNSOXY,  SNICEXY,  SNLIQXY, LFMASSXY, RTMASSXY, &
+                STMASSXY,   WOODXY, STBLCPXY, FASTCPXY,   XSAIXY, LAI,                    &
+                 GRAINXY,    GDDXY,                                                   &
+                CROPTYPE,  CROPCAT,                                                   &
+                irnumsi  ,irnummi  ,irnumfi  ,irwatsi,    &
+                irwatmi  ,irwatfi  ,ireloss  ,irsivol,    &
+                irmivol  ,irfivol  ,irrsplh  ,            &
+                  T2MVXY,   T2MBXY, CHSTARXY,                                         &
+                   NSOIL,  .false.,                                                   &
+                  .true.,runoff_option, crop_option, irrigation_option, irrigation_method,  &
+                  sf_urban_physics,                         &  ! urban scheme
+                  ids,ide+1, jds,jde+1, kds,kde,                &  ! domain
+                  ims,ime, jms,jme, kms,kme,                &  ! memory
+                  its,ite, jts,jte, kts,kte                 &  ! tile
+                     ,smoiseq  ,smcwtdxy ,rechxy   ,deeprechxy, areaxy ,dx, dy, msftx, msfty,&
+                     wtddt    ,stepwtd  ,dtbl  ,qrfsxy ,qspringsxy  ,qslatxy,                  &
+                     fdepthxy ,terrain       ,riverbedxy ,eqzwt ,rivercondxy ,pexpxy,              &
+                     rechclim ,gecros_state, &
+                     NEWTSLB, ADDL_SOIL_DZ, NEWDZS, NEWZSNSOXY      )     ! CB
+
+```
