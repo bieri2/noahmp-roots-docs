@@ -62,5 +62,13 @@ Add to array allocations:
        sf_urban_physics,                         &  ! urban scheme
        ids,ide, jds,jde, kds,kde,                &
        ims,ime, jms,jme, kms,kme,                &
+       its,ite, jts,jte, kts,kte,                &
+       smoiseq  ,smcwtdxy ,rechxy   ,deeprechxy, areaxy, dx, dy, msftx, msfty,&     ! Optional groundwater
+       wtddt    ,stepwtd  ,dt       ,qrfsxy     ,qspringsxy  , qslatxy    ,  &      ! Optional groundwater
+       fdepthxy ,ht     ,riverbedxy ,eqzwt     ,rivercondxy ,pexpxy       ,  &      ! Optional groundwater
+       rechclim,                                                             &      ! Optional groundwater
+       gecros_state,                                                         &       ! Optional gecros crop
+       NEWTSLB, ADDL_SOIL_DZ, NEWDZS, NEWZSNSOXY)  ! CB
+
 ```
 
