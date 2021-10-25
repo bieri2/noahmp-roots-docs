@@ -218,7 +218,7 @@ SUBROUTINE GROUNDWATER_INIT (   &
             &            its,ite, jts,jte, kts,kte                     )
 
 ```
-Changes to variable declarations in GROUNDWATER_INIT:
+Additions to variable declarations in GROUNDWATER_INIT:
 
 ```fortran
 INTEGER,    INTENT(IN)                           :: ADDL_SOIL_LAYERS ! CB
@@ -235,4 +235,109 @@ REAL, PARAMETER           :: T0 = 273.15     ! CB
 LOGICAL :: FILLLAYERS ! CB
 
 REAL, DIMENSION(1:NSOIL+ADDL_SOIL_LAYERS) :: SMCEQ,ZSOIL ! CB
+```
+
+10.	Add code to soil moisture initialization in GROUNDWATER_INIT:
+
+```fortran
+ ! Fill in SM where water table is below resolved soil layers - CB
+ IF (WTD(I,J) < ZSOIL(NSOIL)) THEN
+     DO K = NSOIL,5,-1
+
+        ! Define DDZ
+        IF ( K < NSOIL ) THEN
+           DDZ = ( ZSOIL(K-1) - ZSOIL(K+1) ) * 0.5
+        ELSE
+           DDZ = ZSOIL(K-1) - ZSOIL(K)
+        ENDIF
+
+        ! Use Newton-Raphson method to define SM for each layer
+        EXPON = BEXP +1.
+        AA = DWSAT/DDZ
+        BB = DKSAT / SMCMAX ** EXPON
+
+        IF ( K .EQ. NSOIL ) THEN
+          SMCBELOW = SMCWTDXY(I,J)
+        ELSE
+          SMCBELOW = SMC
+        ENDIF
+
+       ! First guess for SMC
+        SMC = 0.5 * SMCMAX
+
+       ! Newton-Raphson iteration assuming vertical flux = 0
+        DO ITER = 1, 100
+          FUNC = (SMC - SMCBELOW) * AA +  BB * SMC ** EXPON
+          DFUNC = AA + BB * EXPON * SMC ** BEXP
+
+          DX = FUNC/DFUNC
+          SMC = SMC - DX
+          IF ( ABS (DX) < 1.E-6)EXIT
+        ENDDO
+        NEWSMOIS(I,K,J) = MAX(SMC,1.E-4)
+
+     ENDDO
+
+ ELSEIF (WTD(I,J) .GE. ZSOIL(NSOIL)) THEN
+
+    DO K=NSOIL,5,-1
+       FILLLAYERS = .FALSE.
+
+      ! Define SM for a given layer if the WTD is in that layer or at
+      ! the bottom of that layer
+       IF ((WTD(I,J) .LT. ZSOIL(K-1)) .AND. (WTD(I,J) .GT. ZSOIL(K))) THEN
+          NEWSMOIS(I,K,J) = SMCMAX !* ( WTD(I,J) -  ZSOIL(K)) + &
+                           !NEWSMOISEQ(I,K,J) * (ZSOIL(K-1) - WTD(I,J))
+          FILLLAYERS = .TRUE.
+       ELSEIF (WTD(I,J) .EQ. ZSOIL(K)) THEN
+          NEWSMOIS(I,K,J) = NEWSMOISEQ(I,K,J)
+          FILLLAYERS = .TRUE.
+       ENDIF
+
+ !     ! Fill in other layers
+       IF ((K .GT. 5) .AND. (FILLLAYERS .EQ. .TRUE.)) THEN
+         DO NS = K-1,5,-1
+            DDZ = ( ZSOIL(NS-1) - ZSOIL(NS+1) ) * 0.5
+
+            EXPON = BEXP +1.
+            AA = DWSAT/DDZ
+            BB = DKSAT / SMCMAX ** EXPON
+
+            SMCBELOW = NEWSMOIS(I,NS+1,J)
+
+            SMC = 0.5 * SMCMAX
+            DO ITER = 1, 100
+              FUNC = (SMC - SMCBELOW) * AA +  BB * SMC ** EXPON
+              DFUNC = AA + BB * EXPON * SMC ** BEXP
+
+              DX = FUNC/DFUNC
+              SMC = SMC - DX
+              IF ( ABS (DX) < 1.E-6)EXIT
+            ENDDO
+
+            NEWSMOIS(I,NS,J) = MAX(SMC,1E-4)
+         ENDDO
+       ENDIF
+    ENDDO
+ ENDIF
+
+ ! Fill in values for SH2O based on SMC values
+ DO K = NSOIL,2,-1
+      IF(K .LE. 4)THEN
+         IF(NEWSMOIS(I,K,J) .EQ. SMCMAX)THEN
+           FRLIQ = NEWSH2O(I,K,J) / NEWSMOIS(I,K,J)
+           NEWSH2O(I,K,J) = SMCMAX * FRLIQ
+         ENDIF
+      ELSE
+         IF ( TSLB(I,K,J) < 273.149 ) THEN    ! Use explicit as initial soil ice
+           FK=(( (HLICE/(GRAV*(-PSISAT))) *                              &
+              ((TSLB(I,K,J)-T0)/TSLB(I,K,J)) )**(-1/BEXP) )*SMCMAX
+           FK = MAX(FK, 0.02)
+           NEWSH2O(I,K,J) = MIN( FK, NEWSMOIS(I,K,J) )
+         ELSE
+           NEWSH2O(I,K,J)=NEWSMOIS(I,K,J)
+         ENDIF
+      ENDIF
+ END DO
+
 ```
