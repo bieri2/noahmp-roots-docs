@@ -37,7 +37,7 @@ ALLOCATE ( NEWZSNSOXY (XSTART:XEND,-NSNOW+1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) 
 ALLOCATE ( ADDL_SOIL_DZ(1:ADDL_SOIL_LAYERS) )       ! CB
 ```
 
-### 2.	Comment out array initializations to missing values (in order to run with MMF)
+### 2.	Comment out array initializations to missing values (in order to run with MMF).
 ### 3.	Make changes to NOAHMP_INIT arguments in module_sf_noahmpdrv.F:
 
 ```fortran
@@ -85,7 +85,48 @@ INTEGER                :: NEWNSOIL ! CB
 REAL                      :: DEPTH  ! CB
 REAL, DIMENSION(1:NSOIL+ADDL_SOIL_LAYERS) :: NEWZSOIL ! CB
 ```
-5. Make changes accordingly to calls to NOAHMP_INIT in module_NoahMP_hrldas_driver.F.
+### 5. Add code near end of NOAHMP_INIT:
+
+```fortran
+
+       IF (PRESENT(NEWTSLB) .AND. &     ! CB soil temp initialization for additional layers
+           PRESENT(NEWDZS) .AND. &
+           PRESENT(NEWZSNSOXY) .AND. &
+           PRESENT(ADDL_SOIL_DZ)) THEN
+
+         NEWTSLB(:,1:NSOIL,:) = TSLB
+
+         NEWDZS(1:NSOIL)  = DZS
+         NEWDZS(NSOIL+1:) = ADDL_SOIL_DZ
+
+         NEWZSNSOXY(:,-2:NSOIL,:) = ZSNSOXY
+
+         NEWNSOIL = NSOIL+ADDL_SOIL_LAYERS
+
+         DO J = jts, jtf
+          DO I = its, itf
+           DO NS = NSOIL+1, NEWNSOIL
+             IF (NS .EQ. NSOIL+1) THEN
+               DEPTH = ZSOIL(NS-1) - NEWDZS(NS)
+             ELSE
+               DEPTH = DEPTH - NEWDZS(NS)
+             ENDIF
+
+             NEWZSNSOXY(I,NS,J) = DEPTH
+
+             NEWTSLB(I,NS,J) = NEWTSLB(I,4,J)+ &
+                               ((DEPTH-ZSOIL(4))*((TMN(I,J)-TSLB(I,4,J))/(20.0-ZSOIL(4))))
+
+           ENDDO
+          ENDDO
+         ENDDO
+
+         PRINT *, NEWZSNSOXY(100,:,30)
+
+       ENDIF
+
+```
+### 6. Make changes accordingly to calls to NOAHMP_INIT in module_NoahMP_hrldas_driver.F.
 
 First call to NOAHMP_INIT (only executed if restart file used):
 ```fortran
