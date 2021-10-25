@@ -23,7 +23,7 @@ Added to variable declarations:
   REAL,    ALLOCATABLE, DIMENSION(:)        ::  NEWDZS          ! CB
   REAL,    ALLOCATABLE, DIMENSION(:)        ::  ADDL_SOIL_DZ    ! CB
   REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWZSNSOXY      ! CB
-  integer            :: addl_soil_layers = 8  ! CB
+  integer                                   :: addl_soil_layers = 8  ! CB
 ```
 
 Added to array allocations:
