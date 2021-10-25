@@ -89,41 +89,41 @@ REAL, DIMENSION(1:NSOIL+ADDL_SOIL_LAYERS) :: NEWZSOIL ! CB
 
 ```fortran
 
-       IF (PRESENT(NEWTSLB) .AND. &     ! CB soil temp initialization for additional layers
-           PRESENT(NEWDZS) .AND. &
-           PRESENT(NEWZSNSOXY) .AND. &
-           PRESENT(ADDL_SOIL_DZ)) THEN
+IF (PRESENT(NEWTSLB) .AND. &     ! CB soil temp initialization for additional layers
+   PRESENT(NEWDZS) .AND. &
+   PRESENT(NEWZSNSOXY) .AND. &
+   PRESENT(ADDL_SOIL_DZ)) THEN
 
-         NEWTSLB(:,1:NSOIL,:) = TSLB
+ NEWTSLB(:,1:NSOIL,:) = TSLB
 
-         NEWDZS(1:NSOIL)  = DZS
-         NEWDZS(NSOIL+1:) = ADDL_SOIL_DZ
+ NEWDZS(1:NSOIL)  = DZS
+ NEWDZS(NSOIL+1:) = ADDL_SOIL_DZ
 
-         NEWZSNSOXY(:,-2:NSOIL,:) = ZSNSOXY
+ NEWZSNSOXY(:,-2:NSOIL,:) = ZSNSOXY
 
-         NEWNSOIL = NSOIL+ADDL_SOIL_LAYERS
+ NEWNSOIL = NSOIL+ADDL_SOIL_LAYERS
 
-         DO J = jts, jtf
-          DO I = its, itf
-           DO NS = NSOIL+1, NEWNSOIL
-             IF (NS .EQ. NSOIL+1) THEN
-               DEPTH = ZSOIL(NS-1) - NEWDZS(NS)
-             ELSE
-               DEPTH = DEPTH - NEWDZS(NS)
-             ENDIF
+ DO J = jts, jtf
+  DO I = its, itf
+   DO NS = NSOIL+1, NEWNSOIL
+     IF (NS .EQ. NSOIL+1) THEN
+       DEPTH = ZSOIL(NS-1) - NEWDZS(NS)
+     ELSE
+       DEPTH = DEPTH - NEWDZS(NS)
+     ENDIF
 
-             NEWZSNSOXY(I,NS,J) = DEPTH
+     NEWZSNSOXY(I,NS,J) = DEPTH
 
-             NEWTSLB(I,NS,J) = NEWTSLB(I,4,J)+ &
-                               ((DEPTH-ZSOIL(4))*((TMN(I,J)-TSLB(I,4,J))/(20.0-ZSOIL(4))))
+     NEWTSLB(I,NS,J) = NEWTSLB(I,4,J)+ &
+                       ((DEPTH-ZSOIL(4))*((TMN(I,J)-TSLB(I,4,J))/(20.0-ZSOIL(4))))
 
-           ENDDO
-          ENDDO
-         ENDDO
+   ENDDO
+  ENDDO
+ ENDDO
 
-         PRINT *, NEWZSNSOXY(100,:,30)
+ PRINT *, NEWZSNSOXY(100,:,30)
 
-       ENDIF
+ENDIF
 
 ```
 
@@ -196,6 +196,43 @@ addl_soil_dz = (/1.0,1.0,2.0,2.0,2.0,2.0,3.0,5.0/) ! CB
 8.	Redefine variables after second call to NOAHMP_INIT in module_NoahMP_hrldas_driver.F:
 
 ```fortran
-     call move_alloc(newzsnsoxy, zsnsoxy) ! CB
-     call move_alloc(newdzs, dzs)   ! CB
+call move_alloc(newzsnsoxy, zsnsoxy) ! CB
+call move_alloc(newdzs, dzs)   ! CB
+```
+
+9. Make changes to GROUNDWATER_INIT.
+
+Changes to GROUNDWATER_INIT arguments:
+
+```fortran
+SUBROUTINE GROUNDWATER_INIT (   &
+            &            GRID, NSOIL , DZS, ISLTYP, IVGTYP, WTDDT , &
+            &            FDEPTH, TOPO, RIVERBED, EQWTD, RIVERCOND, PEXP , AREA ,WTD ,  &
+            &            SMOIS,SH2O, SMOISEQ, SMCWTDXY, DEEPRECHXY, RECHXY ,  &
+            &            QSLATXY, QRFSXY, QSPRINGSXY,                  &
+            &            rechclim  ,                                   &
+            &            NEWSMOIS, NEWSH2O, NEWSMOISEQ, TSLB, ADDL_SOIL_LAYERS, & ! CB
+            &            ids,ide, jds,jde, kds,kde,                    &
+            &            ims,ime, jms,jme, kms,kme,                    &
+            &            ips,ipe, jps,jpe, kps,kpe,                    &
+            &            its,ite, jts,jte, kts,kte                     )
+
+```
+Changes to variable declarations in GROUNDWATER_INIT:
+
+```fortran
+INTEGER,    INTENT(IN)                           :: ADDL_SOIL_LAYERS ! CB
+REAL,    INTENT(IN), DIMENSION(1:NSOIL+ADDL_SOIL_LAYERS)  :: DZS     ! CB
+REAL,    INTENT(INOUT), DIMENSION(ims:ime, 1:NSOIL+ADDL_SOIL_LAYERS,jms:jme) :: NEWSMOIS   ! CB
+REAL,    INTENT(INOUT), DIMENSION(ims:ime, 1:NSOIL+ADDL_SOIL_LAYERS,jms:jme) :: NEWSH2O    ! CB
+REAL,    INTENT(INOUT), DIMENSION(ims:ime, 1:NSOIL+ADDL_SOIL_LAYERS,jms:jme) :: NEWSMOISEQ ! CB
+REAL,    INTENT(IN), DIMENSION( ims:ime, 1:NSOIL+ADDL_SOIL_LAYERS, jms:jme) :: TSLB        ! CB
+
+REAL :: SMCBELOW, FK ! CB
+REAL, PARAMETER           :: HLICE = 3.335E5 ! CB
+REAL, PARAMETER           :: GRAV = 9.81     ! CB
+REAL, PARAMETER           :: T0 = 273.15     ! CB
+LOGICAL :: FILLLAYERS ! CB
+
+REAL, DIMENSION(1:NSOIL+ADDL_SOIL_LAYERS) :: SMCEQ,ZSOIL ! CB
 ```
