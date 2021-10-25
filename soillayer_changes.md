@@ -82,7 +82,7 @@ REAL, DIMENSION(1:nsoil+addl_soil_layers), INTENT(INOUT), OPTIONAL :: NEWDZS ! C
 REAL, DIMENSION(ims:ime,-2:nsoil+addl_soil_layers,jms:jme), INTENT(INOUT), OPTIONAL :: NEWZSNSOXY  ! CB
 
 INTEGER                :: NEWNSOIL ! CB
-REAL                      :: DEPTH  ! CB
+REAL                   :: DEPTH    ! CB
 REAL, DIMENSION(1:NSOIL+ADDL_SOIL_LAYERS) :: NEWZSOIL ! CB
 ```
 5. Add soil temp interpolation code near end of NOAHMP_INIT:
