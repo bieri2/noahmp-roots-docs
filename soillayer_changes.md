@@ -13,7 +13,7 @@ Author: Carolina Bieri, bieri2@illinois.edu
       - ADDL_SOIL_DZ
       - ADDL_SOIL_LAYERS
 
-Added to variable declarations:
+Add to variable declarations:
 
 ```fortran
   REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWSMOIS        ! CB
@@ -26,7 +26,7 @@ Added to variable declarations:
   integer                                   :: addl_soil_layers = 8  ! CB
 ```
 
-Added to array allocations:
+Add to array allocations:
 ```fortran
   ALLOCATE ( NEWSMOIS   (XSTART:XEND,1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) ) ! CB
   ALLOCATE ( NEWSH2O    (XSTART:XEND,1:NSOIL+ADDL_SOIL_LAYERS,YSTART:YEND) ) ! CB
@@ -38,7 +38,7 @@ Added to array allocations:
 ```
 
 2.	Comment out array initializations to missing values (in order to run with MMF)
-3.	Make changes to NoahMP_INIT:
+3.	Make changes to NoahMP_INIT arguments:
 
 ```fortran
   SUBROUTINE NOAHMP_INIT ( MMINLU, SNOW , SNOWH , CANWAT , ISLTYP ,   IVGTYP, XLAT, &
