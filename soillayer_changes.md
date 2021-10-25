@@ -41,7 +41,7 @@ Add to array allocations:
 3.	Make changes to NoahMP_INIT arguments:
 
 ```fortran
-  SUBROUTINE NOAHMP_INIT ( MMINLU, SNOW , SNOWH , CANWAT , ISLTYP ,   IVGTYP, XLAT, &
+SUBROUTINE NOAHMP_INIT ( MMINLU, SNOW , SNOWH , CANWAT , ISLTYP ,   IVGTYP, XLAT, &
        ADDL_SOIL_LAYERS, & ! CB
        TSLB , SMOIS , SH2O , DZS , FNDSOILW , FNDSNOWH ,             &
        TSK, isnowxy , tvxy     ,tgxy     ,canicexy ,         TMN,     XICE,   &
