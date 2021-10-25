@@ -1,5 +1,5 @@
-1.	Add extra variables to module_NoahMP_hrldas_driver.F
-a.	NEWSMOIS, NEWSH2O, NEWTSLB, NEWSMOISEQ, NEWDZS, ADDL_SOIL_DZ, NEWZSNSOXY, ADDL_SOIL_LAYERS
+# 1.	Add extra variables to module_NoahMP_hrldas_driver.F
+# a.	NEWSMOIS, NEWSH2O, NEWTSLB, NEWSMOISEQ, NEWDZS, ADDL_SOIL_DZ, NEWZSNSOXY, ADDL_SOIL_LAYERS
 
   REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWSMOIS        ! CB
   REAL,    ALLOCATABLE, DIMENSION(:,:,:)    ::  NEWTSLB         ! CB
